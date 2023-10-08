@@ -3,6 +3,8 @@ import { env } from "./env";
 import { registerRoute } from "./routes/registerRoute";
 import { loginRoute } from "./routes/loginRoute";
 import { fastifyCookie } from "@fastify/cookie";
+import { mealsRoute } from "./routes/mealsRoute";
+import fastifyJwt from "@fastify/jwt";
 
 const app = fastify();
 
@@ -14,6 +16,10 @@ app.register(registerRoute, {
 
 app.register(loginRoute, {
   prefix: "login",
+});
+
+app.register(mealsRoute, {
+  prefix: "/meals",
 });
 
 app

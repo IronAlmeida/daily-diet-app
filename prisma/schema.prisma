@@ -27,7 +27,8 @@ model meals {
   created_at  DateTime @default(now())
   diet_on     Boolean
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 
   @@map("meals")
 }
