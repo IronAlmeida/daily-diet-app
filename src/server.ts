@@ -9,6 +9,13 @@ import fastifyJwt from "@fastify/jwt";
 const app = fastify();
 
 app.register(fastifyCookie);
+app.register(fastifyJwt, {
+  secret: env.SECRET_JWT,
+  cookie: {
+    cookieName: "token",
+    signed: false,
+  },
+});
 
 app.register(registerRoute, {
   prefix: "register",

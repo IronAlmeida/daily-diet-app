@@ -2,8 +2,6 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { compareSync } from "bcrypt";
 import { prisma } from "../prisma/prismaClient";
-import jwt from "jsonwebtoken";
-import { env } from "../env";
 
 export async function loginController(
   request: FastifyRequest,
@@ -31,9 +29,14 @@ export async function loginController(
       reply.status(400).send("Senha invalida!");
     }
 
-    const token = jwt.sign({ id: user.id, nome: user.name }, env.SECRET_JWT, {
-      expiresIn: 60 * 60 * 24 * 7, //7 days
-    });
+    const token = await reply.jwtSign(
+      { id: user.id, nome: user.name },
+      {
+        sign: {
+          expiresIn: 60 * 60 * 24 * 7, //7 days
+        },
+      }
+    );
 
     reply
       .cookie("token", token)
