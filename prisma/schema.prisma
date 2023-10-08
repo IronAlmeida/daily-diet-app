@@ -11,8 +11,23 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   name     String
-  login    String @unique
+  login    String  @unique
   password String
+  meals    meals[]
+
+  @@map("users")
+}
+
+model meals {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  created_at  DateTime @default(now())
+  diet_on     Boolean
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("meals")
 }
