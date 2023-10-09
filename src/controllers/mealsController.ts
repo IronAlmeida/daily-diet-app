@@ -1,7 +1,6 @@
-import fastify, { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { prisma } from "../prisma/prismaClient";
-import { strict } from "assert";
 
 export async function getMealsController(
   request: FastifyRequest,
@@ -9,16 +8,21 @@ export async function getMealsController(
 ) {
   const decode: { [key: string]: any } = await request.jwtDecode();
 
-  const meals = await prisma.meals.findMany({
-    where: {
-      userId: decode.id,
-    },
-  });
-
-  reply
-    .header("Content-type", "application/json")
-    .status(200)
-    .send(JSON.stringify(meals));
+  const meals = await prisma.meals
+    .findMany({
+      where: {
+        userId: decode.id,
+      },
+    })
+    .then(() => {
+      reply
+        .header("Content-type", "application/json")
+        .status(200)
+        .send(JSON.stringify(meals));
+    })
+    .catch((error) => {
+      reply.send({ error });
+    });
 }
 
 export async function getMealController(
@@ -35,19 +39,24 @@ export async function getMealController(
 
   const decode: { [key: string]: any } = await request.jwtDecode();
 
-  const meals = await prisma.meals.findFirst({
-    where: {
-      userId: decode.id,
-      AND: {
-        id,
+  const meals = await prisma.meals
+    .findFirst({
+      where: {
+        userId: decode.id,
+        AND: {
+          id,
+        },
       },
-    },
-  });
-
-  reply
-    .header("Content-type", "application/json")
-    .status(200)
-    .send(JSON.stringify(meals));
+    })
+    .then(() => {
+      reply
+        .header("Content-type", "application/json")
+        .status(200)
+        .send(JSON.stringify(meals));
+    })
+    .catch((error) => {
+      reply.send({ error });
+    });
 }
 
 export async function postMealController(
@@ -66,16 +75,21 @@ export async function postMealController(
 
   const decode: { [key: string]: any } = await request.jwtDecode();
 
-  await prisma.meals.create({
-    data: {
-      name,
-      description,
-      diet_on,
-      userId: decode.id,
-    },
-  });
-
-  reply.status(201).send("Refeição registrada!");
+  await prisma.meals
+    .create({
+      data: {
+        name,
+        description,
+        diet_on,
+        userId: decode.id,
+      },
+    })
+    .then(() => {
+      reply.status(201).send("Refeição registrada!");
+    })
+    .catch((error) => {
+      reply.send({ error });
+    });
 }
 
 export async function putMealController(
@@ -102,18 +116,31 @@ export async function putMealController(
 
   const { name, description, diet_on } = putMeals;
 
-  await prisma.meals.update({
-    where: {
-      id,
-    },
-    data: {
-      name,
-      description,
-      diet_on,
-    },
-  });
+  const decode: { [key: string]: any } = await request.jwtDecode();
 
-  reply.status(200).send({ message: "Refeição atualizada!" });
+  await prisma.meals
+    .update({
+      where: {
+        id,
+        AND: {
+          userId: decode.id,
+        },
+      },
+      data: {
+        name,
+        description,
+        diet_on,
+      },
+    })
+    .then(() => {
+      reply.status(200).send({ message: "Refeição atualizada!" });
+    })
+    .catch((error) => {
+      reply.status(401).send({
+        message: "Não é possível alterar refeição de outro usuário",
+        error,
+      });
+    });
 }
 
 export async function deleteMealController(
@@ -128,11 +155,24 @@ export async function deleteMealController(
 
   const { id } = reqParams;
 
-  await prisma.meals.delete({
-    where: {
-      id,
-    },
-  });
+  const decode: { [key: string]: any } = await request.jwtDecode();
 
-  reply.status(204);
+  await prisma.meals
+    .delete({
+      where: {
+        id,
+        AND: {
+          userId: decode,
+        },
+      },
+    })
+    .then(() => {
+      reply.status(204);
+    })
+    .catch((error) => {
+      reply.send({
+        message: "Não é possível exlcuir refeição de outro usuário",
+        error,
+      });
+    });
 }
