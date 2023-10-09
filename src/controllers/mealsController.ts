@@ -1,8 +1,56 @@
-import { FastifyRequest, FastifyReply } from "fastify";
+import fastify, { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { prisma } from "../prisma/prismaClient";
+import { strict } from "assert";
 
-export async function postMealsController(
+export async function getMealsController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const decode: { [key: string]: any } = await request.jwtDecode();
+
+  const meals = await prisma.meals.findMany({
+    where: {
+      userId: decode.id,
+    },
+  });
+
+  reply
+    .header("Content-type", "application/json")
+    .status(200)
+    .send(JSON.stringify(meals));
+}
+
+export async function getMealController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const getReqParamsSchema = z.object({
+    id: z.string(),
+  });
+
+  const reqParams = getReqParamsSchema.parse(request.params);
+
+  const { id } = reqParams;
+
+  const decode: { [key: string]: any } = await request.jwtDecode();
+
+  const meals = await prisma.meals.findFirst({
+    where: {
+      userId: decode.id,
+      AND: {
+        id,
+      },
+    },
+  });
+
+  reply
+    .header("Content-type", "application/json")
+    .status(200)
+    .send(JSON.stringify(meals));
+}
+
+export async function postMealController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
@@ -30,7 +78,7 @@ export async function postMealsController(
   reply.status(201).send("Refeição registrada!");
 }
 
-export async function putMealsController(
+export async function putMealController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
@@ -68,7 +116,7 @@ export async function putMealsController(
   reply.status(200).send({ message: "Refeição atualizada!" });
 }
 
-export async function deleteMealsController(
+export async function deleteMealController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {

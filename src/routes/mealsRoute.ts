@@ -1,19 +1,25 @@
 import { FastifyInstance } from "fastify";
 import {
-  postMealsController,
-  putMealsController,
-  deleteMealsController,
+  getMealsController,
+  getMealController,
+  postMealController,
+  putMealController,
+  deleteMealController,
 } from "../controllers/mealsController";
 import { checkSectionTokenExists } from "../middlewares/check-section-token-exists";
 
 export async function mealsRoute(app: FastifyInstance) {
-  app.post("/", { onRequest: checkSectionTokenExists }, postMealsController);
+  app.get("/", { onRequest: checkSectionTokenExists }, getMealsController);
 
-  app.put("/:id", { onRequest: checkSectionTokenExists }, putMealsController);
+  app.get("/:id", { onRequest: checkSectionTokenExists }, getMealController);
+
+  app.post("/", { onRequest: checkSectionTokenExists }, postMealController);
+
+  app.put("/:id", { onRequest: checkSectionTokenExists }, putMealController);
 
   app.delete(
     "/:id",
     { onRequest: checkSectionTokenExists },
-    deleteMealsController
+    deleteMealController
   );
 }

@@ -22,6 +22,10 @@ export async function loginController(
     },
   });
 
+  if (!user) {
+    reply.status(400).send("Usuário não encontrado");
+  }
+
   if (user) {
     const decode = compareSync(password, user?.password);
 
