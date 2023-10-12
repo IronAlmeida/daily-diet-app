@@ -1,10 +1,11 @@
 import { fastify } from "fastify";
-import { env } from "./env";
+import { fastifyCookie } from "@fastify/cookie";
+import { fastifyJwt } from "@fastify/jwt";
 import { registerRoute } from "./routes/registerRoute";
 import { loginRoute } from "./routes/loginRoute";
-import { fastifyCookie } from "@fastify/cookie";
 import { mealsRoute } from "./routes/mealsRoute";
-import fastifyJwt from "@fastify/jwt";
+import { metricsRoute } from "./routes/metricsRoute";
+import { env } from "./env";
 
 const app = fastify();
 
@@ -26,7 +27,11 @@ app.register(loginRoute, {
 });
 
 app.register(mealsRoute, {
-  prefix: "/meals",
+  prefix: "meals",
+});
+
+app.register(metricsRoute, {
+  prefix: "metrics",
 });
 
 app

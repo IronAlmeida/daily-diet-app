@@ -8,21 +8,17 @@ export async function getMealsController(
 ) {
   const decode: { [key: string]: any } = await request.jwtDecode();
 
-  const meals = await prisma.meals
-    .findMany({
-      where: {
-        userId: decode.id,
-      },
-    })
-    .then(() => {
-      reply
-        .header("Content-type", "application/json")
-        .status(200)
-        .send(JSON.stringify(meals));
-    })
-    .catch((error) => {
-      reply.send({ error });
-    });
+  const meals = await prisma.meals.findMany({
+    where: {
+      userId: decode.id,
+    },
+  });
+
+  try {
+    reply.header("Content-type", "application/json").status(200).send(meals);
+  } catch (error) {
+    reply.status(400).send({ error });
+  }
 }
 
 export async function getMealController(
@@ -39,24 +35,26 @@ export async function getMealController(
 
   const decode: { [key: string]: any } = await request.jwtDecode();
 
-  const meals = await prisma.meals
-    .findFirst({
-      where: {
-        userId: decode.id,
-        AND: {
-          id,
-        },
+  const meals = await prisma.meals.findFirst({
+    where: {
+      userId: decode.id,
+      AND: {
+        id,
       },
-    })
-    .then(() => {
-      reply
-        .header("Content-type", "application/json")
-        .status(200)
-        .send(JSON.stringify(meals));
-    })
-    .catch((error) => {
-      reply.send({ error });
-    });
+    },
+  });
+
+  if (!meals) {
+    reply
+      .status(400)
+      .send({ message: "Não é possível visualizar refeição de outro usuário" });
+  }
+
+  try {
+    reply.header("Content-type", "application/json").status(200).send(meals);
+  } catch (error) {
+    reply.status(401).send({ message: "Não autorizado" });
+  }
 }
 
 export async function postMealController(
@@ -162,7 +160,7 @@ export async function deleteMealController(
       where: {
         id,
         AND: {
-          userId: decode,
+          userId: decode.id,
         },
       },
     })
