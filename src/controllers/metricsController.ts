@@ -31,9 +31,16 @@ export async function metricsController(
     },
   });
 
+  const bestStreak = await prisma.user.findFirst({
+    where: {
+      id: decode.id,
+    },
+  });
+
   reply.status(200).send({
     total: `Total de refeições: ${totalMeals}`,
     dietOn: `Refeições dentro da dieta: ${totalMealsOn}`,
     dietOff: `Refeições fora da dieta: ${totalMealsOff}`,
+    bestStreak: `Melhor sequência de refeições dentro da dieta: ${bestStreak?.best_streak}`,
   });
 }

@@ -73,6 +73,49 @@ export async function postMealController(
 
   const decode: { [key: string]: any } = await request.jwtDecode();
 
+  const userStreak = await prisma.user.findFirst({
+    where: {
+      id: decode.id,
+    },
+  });
+
+  if (diet_on) {
+    const streak = Number(userStreak?.streak) + 1;
+    //prisma
+    await prisma.user.update({
+      where: {
+        id: decode.id,
+      },
+      data: {
+        streak,
+      },
+    });
+
+    if (streak > Number(userStreak?.best_streak)) {
+      const best_streak = streak;
+      //prisma
+      await prisma.user.update({
+        where: {
+          id: decode.id,
+        },
+        data: {
+          best_streak,
+        },
+      });
+    }
+  } else {
+    const streak = 0;
+    //prisma
+    await prisma.user.update({
+      where: {
+        id: decode.id,
+      },
+      data: {
+        streak,
+      },
+    });
+  }
+
   await prisma.meals
     .create({
       data: {

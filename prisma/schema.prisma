@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  name     String
-  login    String   @unique
-  password String
-  meals    meals[]
-  Streak   Streak[]
+  id          String  @id @default(uuid())
+  name        String
+  login       String  @unique
+  password    String
+  streak      Decimal @default(0)
+  best_streak Decimal @default(0)
+  meals       meals[]
 
   @@map("users")
 }
@@ -32,14 +33,4 @@ model meals {
   user User @relation(fields: [userId], references: [id])
 
   @@map("meals")
-}
-
-model Streak {
-  id          String  @id @default(uuid())
-  streak      Decimal @default(0)
-  best_streak Decimal @default(0)
-  user_id     String
-  users       User    @relation(fields: [user_id], references: [id])
-
-  @@map("streaks")
 }
